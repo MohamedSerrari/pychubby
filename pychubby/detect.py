@@ -218,7 +218,7 @@ class LandmarkFace:
         """
         corners, faces = face_rectangle(img, n_upsamples=n_upsamples)
 
-        if len(corners) == 0:
+        if len(corners) != 1:
             raise ValueError("No faces detected.")
 
         elif len(corners) == 1:
@@ -229,11 +229,16 @@ class LandmarkFace:
 
         else:
             if not allow_multiple:
-                raise ValueError(
-                    "Only possible to model one face, {} found. Consider using allow_multiple.".format(
-                        len(corners)
-                    )
-                )
+                _, face = corners[0], faces[0]
+                points, _ = landmarks_68(img, face)
+
+                return cls(points, img)
+
+                # raise ValueError(
+                #     "Only possible to model one face, {} found. Consider using allow_multiple.".format(
+                #         len(corners)
+                #     )
+                # )
             else:
                 all_lf = []
                 for face in faces:
@@ -371,6 +376,9 @@ class LandmarkFace:
         plt.imshow(self.img, cmap="gray")
         plt.show()
 
+    def get_image(self):
+        return self.img
+
 
 class LandmarkFaces:
     """Class enclosing multiple instances of ``LandmarkFace``.
@@ -437,3 +445,6 @@ class LandmarkFaces:
 
         plt.imshow(self[0].img, cmap='gray')
         plt.show()
+
+    def get_image(self):
+        return self.lf_list[0].img
